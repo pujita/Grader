@@ -189,6 +189,18 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
     public void addActionListener(ActionListener al) {
         comboBox.addActionListener(al);
     }
+    
+    public int getSelectedIndex() {
+    	return comboBox.getSelectedIndex();
+    }
+    
+    public void setSelectedIndex(int index) {
+    	comboBox.setSelectedIndex(index);
+    }
+    
+    public E getSelectedItem() {
+    	return (E)comboBox.getSelectedItem();
+    }
 
     private void updateImage() {
     	if (comboBox.hasFocus()) {

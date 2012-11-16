@@ -47,6 +47,7 @@ public class LabelExtended extends JComponent {
 	        
 	        text = s;
 	        wrap = true;
+	        auto = false;
 	        alignment = 0;
 	        
 	        if (font != null) {

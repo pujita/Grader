@@ -82,5 +82,9 @@ public class Student {
 	public void setAverageAssignmentGrade(int averageAssignmentGrade) {
 		this.averageAssignmentGrade = averageAssignmentGrade;
 	}
+	
+	public String toString() {
+		return getName();
+	}
 
 }

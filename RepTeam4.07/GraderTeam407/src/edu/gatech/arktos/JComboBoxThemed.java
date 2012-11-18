@@ -349,6 +349,10 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
         	comboBox.addItem((E)"(click for details)");
         }
 	}
+	
+	public void setSelectedItem(E item) {
+		comboBox.setSelectedItem(item);
+	}
 
 	
 }

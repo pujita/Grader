@@ -1,5 +1,6 @@
 package edu.gatech.arktos;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
@@ -16,7 +17,13 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import com.google.gdata.util.ServiceException;
 
@@ -36,12 +43,18 @@ public class GradesTool {
 	private static LabelExtended labelAssignmentGradeValue;
 	private static LabelExtended labelAssignmentAverageGrade;
 	private static LabelExtended labelProjectAverageGrade;
+	private static LabelExtended labelProjectGradeTotalValue;
 	private static JComboBoxThemed<String> _comboBoxProjectContributionGrade;
 	private static JComboBoxThemed<String> _comboBoxProjectAverageGrade;
+	private static JList<String> _listMembers;
+	private static JList<String> _listGrades;
 	
 	private static GradesDB gdb;
 	
 	private static ArrayList<ArrayList<ProjectTeam>> projectsTeams;
+	private static DefaultListModel membersModel;
+	private static DefaultListModel gradesModel;
+	
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void main(String [] args) throws IOException, ServiceException {
@@ -143,7 +156,24 @@ public class GradesTool {
 				
 				if (selectedTeam >= 0) {
 					ProjectTeam p = projectsTeams.get(projectNumber).get(selectedTeam);
-						
+					
+					membersModel.clear();
+					ArrayList<String> teamMembers = p.getTeamMembers();
+					for (String member: teamMembers) {
+						membersModel.addElement(member);
+					}
+					
+					gradesModel.clear();
+					HashMap<String, Integer> teamGrades = p.getAllTeamScores();
+					Set<String> keys = teamGrades.keySet();
+					for (String key: keys) {
+						if (!key.equals("TOTAL")) {
+							gradesModel.addElement(key + " got " + teamGrades.get(key));							
+						}
+						else {
+							labelProjectGradeTotalValue.setText(String.valueOf(teamGrades.get(key)));
+						}
+					}
 				}
 			}
 		});
@@ -323,6 +353,56 @@ public class GradesTool {
 		_comboBoxProjectContributionGrade.setLocation(150, 420);
 		_comboBoxProjectContributionGrade.setSize(150, 25);
 		_comboBoxProjectContributionGrade.setFont(font);
+		
+		
+		LabelExtended labelProjectMembers = new LabelExtended("Team members:", font);
+		labelProjectMembers.setLocation(350, 98);
+		frame.add(labelProjectMembers);
+		membersModel = new DefaultListModel();
+		_listMembers = new JList();
+		_listMembers.setLocation(350, 125);
+		_listMembers.setSize(275, 93);
+		_listMembers.setFont(font);
+		_listMembers.setBackground(Color.getHSBColor(0, 0, 0.88f));
+		_listMembers.setBorder(BorderFactory.createLineBorder(Color.getHSBColor(0, 0, 0.75f)));
+		_listMembers.setModel(membersModel);
+		JScrollPane acrossScrollBar = new JScrollPane(_listMembers);
+		frame.add(acrossScrollBar);
+		acrossScrollBar.setLocation(350, 125);
+		acrossScrollBar.setSize(275, 93);
+		_listMembers.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				if (_listMembers.getSelectedIndex() >= 0) {
+					_comboBoxStudent.setSelectedItem(gdb.getStudentByName(_listMembers.getSelectedValue()));
+				}
+			}
+		});
+		
+		LabelExtended labelProjectGrades = new LabelExtended("Team project grades:", font);
+		labelProjectGrades.setLocation(350, 232);
+		frame.add(labelProjectGrades);
+		gradesModel = new DefaultListModel();
+		_listGrades = new JList();
+		_listGrades.setLocation(350, 260);
+		_listGrades.setSize(275, 93);
+		_listGrades.setFont(font);
+		_listGrades.setBackground(Color.getHSBColor(0, 0, 0.88f));
+		_listGrades.setBorder(BorderFactory.createLineBorder(Color.getHSBColor(0, 0, 0.75f)));
+		_listGrades.setModel(gradesModel);
+		acrossScrollBar = new JScrollPane(_listGrades);
+		frame.add(acrossScrollBar);
+		acrossScrollBar.setLocation(350, 260);
+		acrossScrollBar.setSize(275, 113);
+		LabelExtended labelProjectGradeTotal = new LabelExtended("Total:", font);
+		labelProjectGradeTotal.setLocation(525, 370);
+		frame.add(labelProjectGradeTotal);
+		labelProjectGradeTotalValue = new LabelExtended("<Undefined>", font);
+		labelProjectGradeTotalValue.setLocation(575, 370);
+		labelProjectGradeTotalValue.setSize(45, labelProjectGradeTotalValue.getHeight());
+		labelProjectGradeTotalValue.setHorizontalAlignment(LabelExtended.ALIGN_RIGHT);
+		labelProjectGradeTotalValue.setBold(true);
+		frame.add(labelProjectGradeTotalValue);
 		
 		
 		fillData();

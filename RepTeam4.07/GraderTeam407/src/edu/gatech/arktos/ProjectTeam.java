@@ -107,7 +107,7 @@ public class ProjectTeam {
 	}
 	
 	public String getTeamNumber() {
-		return teamName;
+		return teamName.substring(5);
 	}
 	
 	/**

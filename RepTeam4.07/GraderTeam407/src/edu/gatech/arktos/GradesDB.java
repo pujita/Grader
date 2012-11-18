@@ -36,6 +36,7 @@ public class GradesDB {
 	private HashMap<String, String> assignmentsDesc;
 	private HashMap<String, String> projectsDesc;
 	private HashMap<Integer, Integer> sumAssignmentsGrades;
+	private ArrayList<ArrayList<ProjectTeam>> teamsByNumber;
 	
 	/**
 	 * Constructor
@@ -200,7 +201,12 @@ public class GradesDB {
 	    ArrayList<String> teamMembers = new ArrayList<String>();
 	    ProjectTeam project;
 	    
+	    teamsByNumber = new ArrayList<ArrayList<ProjectTeam>>();
+	    
 	    for (int j = 0; j < projectTeams.size(); j++) {
+	    	ArrayList<ProjectTeam> teamsForThisProject = new ArrayList<ProjectTeam>();
+	    	teamsByNumber.add(teamsForThisProject);
+	    	
 	    	//project = new ProjectTeam();
 	    			
 	    	// parse P1 P2 and P3 teams 
@@ -221,6 +227,7 @@ public class GradesDB {
 		    		}
 		    	}
 		    	project = new ProjectTeam(projectNumber, teamName, projectsDesc.get("P" + projectNumber), teamMembers);
+		    	teamsForThisProject.add(project);
 		    	
 		    	// Parse P1 P2 and P3 grades
 		    	gradesUrl = projectGrades.get(j).getListFeedUrl();
@@ -350,6 +357,10 @@ public class GradesDB {
 	
 	public int getAssignmentGrade(int assignment) {
 		return (numStudents == 0) ? 0 : sumAssignmentsGrades.get(assignment)/numStudents;
+	}
+	
+	public ArrayList<ArrayList<ProjectTeam>> getProjectsTeams() {
+		return teamsByNumber;
 	}
 
 	

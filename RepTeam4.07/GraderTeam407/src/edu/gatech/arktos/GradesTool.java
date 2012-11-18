@@ -23,9 +23,9 @@ import com.google.gdata.util.ServiceException;
 public class GradesTool {
 	
 	private static JComboBoxThemed<Student> _comboBoxStudent;
-	private static JComboBoxThemed<ProjectTeam> _comboBoxProject;
+	private static JComboBoxThemed<String> _comboBoxProject;
 	@SuppressWarnings("rawtypes")
-	private static JComboBoxThemed _comboBoxGroup;
+	private static JComboBoxThemed<String> _comboBoxTeam;
 	private static JComboBoxThemed<Assignment> _comboBoxAssignments;
 	private static JComboBoxThemed<ProjectTeam> _comboBoxProjects;
 	
@@ -41,6 +41,8 @@ public class GradesTool {
 	
 	private static GradesDB gdb;
 	
+	private static ArrayList<ArrayList<ProjectTeam>> projectsTeams;
+	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void main(String [] args) throws IOException, ServiceException {
 		
@@ -55,7 +57,6 @@ public class GradesTool {
 			}
 			@Override
 			public void componentMoved(ComponentEvent e) {
-				
 			}
 			@Override
 			public void componentShown(ComponentEvent e) {
@@ -113,12 +114,39 @@ public class GradesTool {
 		_comboBoxProject.setLocation(new Point(350, 35));
 		_comboBoxProject.setSize(new Dimension(65, 35));
 		_comboBoxProject.setFont(font);
+		_comboBoxProject.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int projectNumber = _comboBoxProject.getSelectedIndex();
+				
+				if (projectNumber >= 0) {
+					ArrayList<ProjectTeam> projectTeams = projectsTeams.get(projectNumber);
+					
+					_comboBoxTeam.removeAllItems();
+					for (int i = 0; i < projectTeams.size(); ++i) {
+						_comboBoxTeam.addItem(((i < 10) ? "0" : "") + (i + 1));
+					}
+				}
+			}
+		});
 		
-		_comboBoxGroup = new JComboBoxThemed();
-		frame.add(_comboBoxGroup);
-		_comboBoxGroup.setLocation(new Point(430, 35));
-		_comboBoxGroup.setSize(new Dimension(80, 35));
-		_comboBoxGroup.setFont(font);
+		_comboBoxTeam = new JComboBoxThemed();
+		frame.add(_comboBoxTeam);
+		_comboBoxTeam.setLocation(new Point(430, 35));
+		_comboBoxTeam.setSize(new Dimension(80, 35));
+		_comboBoxTeam.setFont(font);
+		_comboBoxTeam.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int projectNumber = _comboBoxProject.getSelectedIndex();
+				int selectedTeam = _comboBoxTeam.getSelectedIndex();
+				
+				if (selectedTeam >= 0) {
+					ProjectTeam p = projectsTeams.get(projectNumber).get(selectedTeam);
+						
+				}
+			}
+		});
 		
 		LabelExtended labelStudent = new LabelExtended("Student:");
 		labelStudent.setFont(font);
@@ -265,6 +293,9 @@ public class GradesTool {
 						_comboBoxProjectContributionGrade.addItem(((grade < 10) ? "0" : "") + contributionScores.get(i) + " from " + peer);
 						++i;
 					}
+					
+					_comboBoxProject.setSelectedIndex(p.getProjectNumber() - 1);
+					_comboBoxTeam.setSelectedIndex(Integer.parseInt(p.getTeamNumber()) - 1);
 				}
 			}
 		});
@@ -304,6 +335,11 @@ public class GradesTool {
 		
 		gdb = sess.getDBByName(Constants.GRADES_DB);
 		HashSet<Student> stds = gdb.getStudents();
+		
+		projectsTeams = gdb.getProjectsTeams();
+		for (int i = 0; i < projectsTeams.size(); ++i) {
+			_comboBoxProject.addItem(String.valueOf(i + 1));
+		}
 		
 		for (Student std: stds) {
 			_comboBoxStudent.addItem(std);

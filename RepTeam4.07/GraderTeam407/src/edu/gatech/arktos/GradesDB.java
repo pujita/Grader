@@ -137,9 +137,6 @@ public class GradesDB {
 	 * @throws IOException 
 	 */
 	private void processData() throws IOException, ServiceException{
-		URL dataUrl = data.getListFeedUrl();
-	    ListFeed dataFeed = service.getFeed(dataUrl, ListFeed.class);
-	    
 	    assignmentsDesc = new HashMap<String, String>();
 	    projectsDesc = new HashMap<String, String>();
 	    

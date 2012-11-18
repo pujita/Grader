@@ -24,6 +24,7 @@ public class GradesTool {
 	
 	private static JComboBoxThemed<Student> _comboBoxStudent;
 	private static JComboBoxThemed<ProjectTeam> _comboBoxProject;
+	@SuppressWarnings("rawtypes")
 	private static JComboBoxThemed _comboBoxGroup;
 	private static JComboBoxThemed<Assignment> _comboBoxAssignments;
 	private static JComboBoxThemed<ProjectTeam> _comboBoxProjects;
@@ -40,6 +41,7 @@ public class GradesTool {
 	
 	private static GradesDB gdb;
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void main(String [] args) throws IOException, ServiceException {
 		
 		final JFrame frame = new JFrame("GradesTool");

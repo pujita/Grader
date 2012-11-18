@@ -3,12 +3,11 @@ package edu.gatech.arktos;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
+@SuppressWarnings("serial")
 public class LabelExtended extends JComponent {
 
 	    public static final int ALIGN_LEFT   = 0;

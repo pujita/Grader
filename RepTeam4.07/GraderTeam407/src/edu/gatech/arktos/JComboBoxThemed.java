@@ -25,6 +25,7 @@ import javax.swing.JComponent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
+@SuppressWarnings("serial")
 public class JComboBoxThemed<E> extends JComponent implements FocusListener, MouseListener, ComponentListener, PopupMenuListener {
 	
 	protected static double ROUNDEDBORDERS_PERCENTAGE = 0.30;
@@ -58,7 +59,8 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
         init(false);
     }
     
-    private void init(boolean onlyRead) {
+    @SuppressWarnings("unchecked")
+	private void init(boolean onlyRead) {
     	this.onlyRead = onlyRead;
     	
     	setOpaque(false);
@@ -256,7 +258,8 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
     	comboBox.setSelectedIndex(index);
     }
     
-    public E getSelectedItem() {
+    @SuppressWarnings("unchecked")
+	public E getSelectedItem() {
     	return (E)comboBox.getSelectedItem();
     }
 
@@ -323,6 +326,7 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
 		theme.setPopupVisible(true);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
 		theme.setPopupVisible(false);
@@ -337,6 +341,7 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
 		theme.setPopupVisible(false);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void removeAllItems() {
 		comboBox.removeAllItems();
 		

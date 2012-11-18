@@ -31,6 +31,8 @@ public class GradesDB {
 	private HashMap<String, Student> students;
 	private WorksheetEntry details, data, attendance, grades;
 	private ArrayList<WorksheetEntry> projectTeams, projectGrades, projectContributions;
+	private HashMap<String, Assignment> assignments;
+	private HashMap<Integer, Integer> sumAssignmentsGrades;
 	
 	/**
 	 * Constructor
@@ -80,8 +82,8 @@ public class GradesDB {
 	    	}
 	    }
 	    
-	    processDetails();
 	    processData();
+	    processDetails();
 	    createProjects();
 	}
 	
@@ -103,6 +105,8 @@ public class GradesDB {
 	    URL gradesUrl = grades.getListFeedUrl();
 	    ListFeed gradesFeed = service.getFeed(gradesUrl, ListFeed.class);
 	    
+	    sumAssignmentsGrades = new HashMap<Integer, Integer>();
+	    
 	    for (ListEntry row : detailsFeed.getEntries()) {	    	    	    	
 	    	String name = row.getTitle().getPlainText();
 	    	if (name.isEmpty()) continue;
@@ -112,10 +116,10 @@ public class GradesDB {
 	    	// get attendance and assignment grade information
 	    	int attendance = getAttendance(numStudents, attendanceFeed);
 	    	int averageAssignmentGrade = getAverageAssignmentGrade(numStudents, gradesFeed);
-	    	ArrayList<Integer> assignmentGrades = getAssignmentGrade(numStudents, gradesFeed);
+	    	ArrayList<Assignment> assignments = getAssignments(numStudents, gradesFeed);
 	    	
 	    	Student s = new Student(name, cells.getValue("GTID"), cells.getValue("EMAIL"), attendance);	 
-	    	s.setAssignmentGrades(assignmentGrades);
+	    	s.setAssignments(assignments);
 	    	s.setAverageAssignmentGrade(averageAssignmentGrade);
 	    	students.put(name, s);
 	    	numStudents++;
@@ -133,10 +137,16 @@ public class GradesDB {
 		URL dataUrl = data.getListFeedUrl();
 	    ListFeed dataFeed = service.getFeed(dataUrl, ListFeed.class);
 	    
+	    assignments = new HashMap<String, Assignment>();
+	    
 	    for (ListEntry row : dataFeed.getEntries()) {	    	    	    	    	
 	    	CustomElementCollection cells = row.getCustomElements();
 	    	
-	    	if (!cells.getValue("Assignments").isEmpty()) {
+	    	String assignment = cells.getValue("Assignments");
+	    	String description = cells.getValue("Description");
+	    	if (!assignment.isEmpty()) {
+	    		assignments.put(assignment, new Assignment(assignment, description, null, null));
+	    		
 	    		numAssignments++;
 	    	}
 	    	if (!cells.getValue("Projects").isEmpty()) {
@@ -228,24 +238,35 @@ public class GradesDB {
     	int attendance = convertToInt(cells.getValue("Total"));
     	return attendance;
 	}
-
+	
 	
 	/**
-	 * Get the array of assignment grades from the grades spreadsheet
+	 * Get the array of assignments
 	 * @param index
 	 * @param gradeslistFeed
 	 * @return
 	 */
-	private ArrayList<Integer> getAssignmentGrade(int index,
-			ListFeed gradeslistFeed) {
+	public ArrayList<Assignment> getAssignments(int index, ListFeed gradeslistFeed) {
 		ListEntry row = gradeslistFeed.getEntries().get(index);
 	    CustomElementCollection cells = row.getCustomElements();
 	    
-	    ArrayList<Integer> assignmentGrades = new ArrayList<Integer>();    
-	    assignmentGrades.add( convertToInt( cells.getValue("Assignment1")));
-	    assignmentGrades.add( convertToInt( cells.getValue("Assignment2")));
-	    assignmentGrades.add( convertToInt( cells.getValue("Assignment3")));
-		return assignmentGrades;
+	    ArrayList<Assignment> assignmentsList = new ArrayList<Assignment>();
+	    
+    	int i = 1;
+	    String grade;
+	    while ((grade = cells.getValue("Assignment" + String.valueOf(i))) != null) {
+	    	Integer sumGrade = sumAssignmentsGrades.get(i);
+	    	sumGrade = ((sumGrade == null) ? 0 : sumGrade) + convertToInt(grade);
+	    	sumAssignmentsGrades.put(i, sumGrade);
+	    	
+	    	String assignmentName = "Assignment " + String.valueOf(i);
+    		Assignment a = new Assignment(assignmentName, assignments.get(assignmentName).getDesc(), i, grade);
+	    	
+	    	assignmentsList.add(a);
+	    	++i;
+	    }
+	    
+		return assignmentsList;
 	}
 
 	
@@ -255,8 +276,7 @@ public class GradesDB {
 	 * @param gradeslistFeed
 	 * @return
 	 */
-	private int getAverageAssignmentGrade(int index,
-			ListFeed gradeslistFeed) {
+	private int getAverageAssignmentGrade(int index, ListFeed gradeslistFeed) {
 		ListEntry row = gradeslistFeed.getEntries().get(index);
 	    CustomElementCollection cells = row.getCustomElements();
 	    return convertToInt(cells.getValue("Average"));	    
@@ -297,6 +317,10 @@ public class GradesDB {
 			studentSet.add(students.get(key));
 		}
 		return studentSet;
+	}
+	
+	public int getAssignmentGrade(int assignment) {
+		return (numStudents == 0) ? 0 : sumAssignmentsGrades.get(assignment)/numStudents;
 	}
 
 	

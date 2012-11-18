@@ -272,4 +272,8 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
 		theme.setPopupVisible(false);
 	}
 	
+	public void removeAllItems() {
+		comboBox.removeAllItems();
+	}
+	
 }

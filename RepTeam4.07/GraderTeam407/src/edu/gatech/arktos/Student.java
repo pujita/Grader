@@ -12,7 +12,7 @@ public class Student {
 	private String gtid;
 	private String email;
 	private int attendance;	
-	private ArrayList<Integer> assignmentGrades;
+	private ArrayList<Assignment> assignments;
 	private int averageAssignmentGrade;
 	private ArrayList<ProjectTeam> projects;
 	
@@ -60,11 +60,21 @@ public class Student {
 	}
 
 	public ArrayList<Integer> getAssignmentGrades() {
+		ArrayList<Integer> assignmentGrades = new ArrayList<Integer>();
+		
+		for (Assignment a: assignments) {
+			assignmentGrades.add( GradesDB.convertToInt(a.getGrade()));
+		}
+		
 		return assignmentGrades;
 	}
+	
+	public ArrayList<Assignment> getAssignments() {
+		return assignments;
+	}
 
-	public void setAssignmentGrades(ArrayList<Integer> assignmentGrades) {
-		this.assignmentGrades = assignmentGrades;
+	public void setAssignments(ArrayList<Assignment> assignments) {
+		this.assignments = assignments;
 	}
 
 	public ArrayList<ProjectTeam> getProjects() {

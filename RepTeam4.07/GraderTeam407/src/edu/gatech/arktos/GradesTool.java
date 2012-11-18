@@ -24,10 +24,10 @@ import com.google.gdata.util.ServiceException;
 public class GradesTool {
 	
 	private static JComboBoxThemed<Student> _comboBoxStudent;
-	private static JComboBoxThemed _comboBoxProject;
+	private static JComboBoxThemed<ProjectTeam> _comboBoxProject;
 	private static JComboBoxThemed _comboBoxGroup;
 	private static JComboBoxThemed<Assignment> _comboBoxAssignments;
-	private static JComboBoxThemed<Assignment> _comboBoxProjects;
+	private static JComboBoxThemed<ProjectTeam> _comboBoxProjects;
 	
 	private static LabelExtended labelGTIDvalue;
 	private static LabelExtended labelEmailValue;
@@ -112,6 +112,12 @@ public class GradesTool {
 					for (Assignment assign: assigns) {
 						_comboBoxAssignments.addItem(assign);
 					}
+					
+					_comboBoxProjects.removeAllItems();
+					ArrayList<ProjectTeam> projects = s.getProjects();
+					for (ProjectTeam project: projects) {
+						_comboBoxProjects.addItem(project);
+					}
 				}
 			}
 		});
@@ -144,32 +150,32 @@ public class GradesTool {
 		frame.add(labelProjectGroup);
 		
 		LabelExtended labelGTID = new LabelExtended("GTID:", font);
-		labelGTID.setLocation(25, 90);
+		labelGTID.setLocation(25, 80);
 		frame.add(labelGTID);
 		labelGTIDvalue = new LabelExtended("<Undefined>", font);
 		labelGTIDvalue.setBold(true);
 		labelGTIDvalue.setSize(185, labelGTIDvalue.getSize().height);
-		labelGTIDvalue.setLocation(115, 90);
+		labelGTIDvalue.setLocation(115, 80);
 		labelGTIDvalue.setHorizontalAlignment(LabelExtended.ALIGN_RIGHT);
 		frame.add(labelGTIDvalue);
 		
 		LabelExtended labelEmail = new LabelExtended("e-mail:", font);
-		labelEmail.setLocation(25, 110);
+		labelEmail.setLocation(25, 100);
 		frame.add(labelEmail);
 		labelEmailValue = new LabelExtended("<Undefined>", font);
 		labelEmailValue.setBold(true);
 		labelEmailValue.setSize(185, labelEmailValue.getSize().height);
-		labelEmailValue.setLocation(115, 110);
+		labelEmailValue.setLocation(115, 100);
 		labelEmailValue.setHorizontalAlignment(LabelExtended.ALIGN_RIGHT);
 		frame.add(labelEmailValue);
 		
 		LabelExtended labelAttendance = new LabelExtended("Attendance:", font);
-		labelAttendance.setLocation(25, 130);
+		labelAttendance.setLocation(25, 120);
 		frame.add(labelAttendance);
 		labelAttendanceValue = new LabelExtended("<Undefined>", font);
 		labelAttendanceValue.setBold(true);
 		labelAttendanceValue.setSize(185, labelAttendanceValue.getSize().height);
-		labelAttendanceValue.setLocation(115, 130);
+		labelAttendanceValue.setLocation(115, 120);
 		labelAttendanceValue.setHorizontalAlignment(LabelExtended.ALIGN_RIGHT);
 		frame.add(labelAttendanceValue);
 		
@@ -178,23 +184,23 @@ public class GradesTool {
 		map.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
 		Font fontUnderline = font.deriveFont(map).deriveFont(18.0f);
 		LabelExtended labelGrades = new LabelExtended("Grades", fontUnderline);
-		labelGrades.setLocation(15, 170);
+		labelGrades.setLocation(15, 150);
 		labelGrades.setBold(true);
 		frame.add(labelGrades);
 		
 		LabelExtended labelAssignment = new LabelExtended("Assignments:", font);
-		labelAssignment.setLocation(25, 200);
+		labelAssignment.setLocation(25, 180);
 		frame.add(labelAssignment);
 		labelAssignmentsAverageGrade = new LabelExtended("<Undefined>", font);
 		labelAssignmentsAverageGrade.setBold(true);
 		labelAssignmentsAverageGrade.setSize(185, labelAssignmentsAverageGrade.getSize().height);
-		labelAssignmentsAverageGrade.setLocation(115, 200);
+		labelAssignmentsAverageGrade.setLocation(115, 180);
 		labelAssignmentsAverageGrade.setHorizontalAlignment(LabelExtended.ALIGN_RIGHT);
 		frame.add(labelAssignmentsAverageGrade);
 		
 		_comboBoxAssignments = new JComboBoxThemed();
 		frame.add(_comboBoxAssignments);
-		_comboBoxAssignments.setLocation(new Point(25, 230));
+		_comboBoxAssignments.setLocation(new Point(25, 210));
 		_comboBoxAssignments.setSize(new Dimension(275, 29));
 		_comboBoxAssignments.setFont(font);
 		_comboBoxAssignments.addActionListener(new ActionListener() {
@@ -212,39 +218,39 @@ public class GradesTool {
 		});
 		
 		LabelExtended labelAssignmentGrade = new LabelExtended("Student grade:", font);
-		labelAssignmentGrade.setLocation(55, 260);
+		labelAssignmentGrade.setLocation(55, 240);
 		frame.add(labelAssignmentGrade);
 		labelAssignmentGradeValue = new LabelExtended("<Undefined>", font);
 		labelAssignmentGradeValue.setBold(true);
 		labelAssignmentGradeValue.setSize(185, labelAssignmentGradeValue.getSize().height);
-		labelAssignmentGradeValue.setLocation(115, 260);
+		labelAssignmentGradeValue.setLocation(115, 240);
 		labelAssignmentGradeValue.setHorizontalAlignment(LabelExtended.ALIGN_RIGHT);
 		frame.add(labelAssignmentGradeValue);
 		
 		LabelExtended labelAssignmentAverage = new LabelExtended("Average class grade:", font);
-		labelAssignmentAverage.setLocation(55, 280);
+		labelAssignmentAverage.setLocation(55, 260);
 		frame.add(labelAssignmentAverage);
 		labelAssignmentAverageGrade = new LabelExtended("<Undefined>", font);
 		labelAssignmentAverageGrade.setBold(true);
 		labelAssignmentAverageGrade.setSize(185, labelAssignmentAverageGrade.getSize().height);
-		labelAssignmentAverageGrade.setLocation(115, 280);
+		labelAssignmentAverageGrade.setLocation(115, 260);
 		labelAssignmentAverageGrade.setHorizontalAlignment(LabelExtended.ALIGN_RIGHT);
 		frame.add(labelAssignmentAverageGrade);
 		
 		
 		LabelExtended labelProject = new LabelExtended("Projects:", font);
-		labelProject.setLocation(25, 315);
+		labelProject.setLocation(25, 295);
 		frame.add(labelProject);
 		labelProjectAverageGrade = new LabelExtended("<Undefined>", font);
 		labelProjectAverageGrade.setBold(true);
 		labelProjectAverageGrade.setSize(185, labelProjectAverageGrade.getSize().height);
-		labelProjectAverageGrade.setLocation(115, 315);
+		labelProjectAverageGrade.setLocation(115, 295);
 		labelProjectAverageGrade.setHorizontalAlignment(LabelExtended.ALIGN_RIGHT);
 		frame.add(labelProjectAverageGrade);
 		
 		_comboBoxProjects = new JComboBoxThemed();
 		frame.add(_comboBoxProjects);
-		_comboBoxProjects.setLocation(new Point(25, 345));
+		_comboBoxProjects.setLocation(new Point(25, 325));
 		_comboBoxProjects.setSize(new Dimension(275, 29));
 		_comboBoxProjects.setFont(font);
 		_comboBoxProjects.addActionListener(new ActionListener() {
@@ -255,32 +261,32 @@ public class GradesTool {
 		});
 		
 		LabelExtended labelProjectGrade = new LabelExtended("Team grade:", font);
-		labelProjectGrade.setLocation(55, 375);
+		labelProjectGrade.setLocation(55, 360);
 		frame.add(labelProjectGrade);
 		labelProjectsAverageGrade = new LabelExtended("<Undefined>", font);
 		labelProjectsAverageGrade.setBold(true);
 		labelProjectsAverageGrade.setSize(185, labelProjectsAverageGrade.getSize().height);
-		labelProjectsAverageGrade.setLocation(115, 375);
+		labelProjectsAverageGrade.setLocation(115, 360);
 		labelProjectsAverageGrade.setHorizontalAlignment(LabelExtended.ALIGN_RIGHT);
 		frame.add(labelProjectsAverageGrade);
 		
 		LabelExtended labelProjectAverage = new LabelExtended("Average teams grade:", font);
-		labelProjectAverage.setLocation(55, 395);
+		labelProjectAverage.setLocation(55, 385);
 		frame.add(labelProjectAverage);
 		labelProjectAverageGrade = new LabelExtended("<Undefined>", font);
 		labelProjectAverageGrade.setBold(true);
 		labelProjectAverageGrade.setSize(185, labelProjectAverageGrade.getSize().height);
-		labelProjectAverageGrade.setLocation(115, 395);
+		labelProjectAverageGrade.setLocation(115, 385);
 		labelProjectAverageGrade.setHorizontalAlignment(LabelExtended.ALIGN_RIGHT);
 		frame.add(labelProjectAverageGrade);
 		
 		LabelExtended labelProjectContribution = new LabelExtended("Contribution grade received:", font);
-		labelProjectContribution.setLocation(55, 415);
+		labelProjectContribution.setLocation(55, 410);
 		frame.add(labelProjectContribution);
 		labelProjectContributionGrade = new LabelExtended("<Undefined>", font);
 		labelProjectContributionGrade.setBold(true);
 		labelProjectContributionGrade.setSize(185, labelProjectContributionGrade.getSize().height);
-		labelProjectContributionGrade.setLocation(115, 415);
+		labelProjectContributionGrade.setLocation(115, 410);
 		labelProjectContributionGrade.setHorizontalAlignment(LabelExtended.ALIGN_RIGHT);
 		frame.add(labelProjectContributionGrade);
 		

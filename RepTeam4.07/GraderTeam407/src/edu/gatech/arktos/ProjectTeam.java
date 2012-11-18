@@ -16,6 +16,7 @@ public class ProjectTeam {
 
 	private int projectNumber;
 	private String teamName;
+	private String desc;
 	private ArrayList<String> teamMembers;
 	private HashMap<String, Double> averageScore;//from P1 contribution etc
 	private HashMap<String, ArrayList<Integer>> peerScores;//from P1 contribution etc
@@ -27,9 +28,10 @@ public class ProjectTeam {
 	 * @param teamName
 	 * @param teamMembers
 	 */
-	public ProjectTeam (int projectNumber, String teamName, ArrayList<String> teamMembers) {
+	public ProjectTeam (int projectNumber, String teamName, String desc, ArrayList<String> teamMembers) {
 		this.projectNumber = projectNumber;
 		this.teamName = teamName;
+		this.desc = desc;
 		this.teamMembers = teamMembers;
 		averageScore = new HashMap<String, Double>();
 		peerScores = new HashMap<String, ArrayList<Integer>>();
@@ -165,6 +167,10 @@ public class ProjectTeam {
 
 	public void setTeamName(String teamName) {
 		this.teamName = teamName;
+	}
+	
+	public String toString() {
+		return projectNumber + ". " + desc;
 	}
 	
 	

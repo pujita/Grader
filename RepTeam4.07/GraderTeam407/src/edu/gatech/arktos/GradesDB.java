@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
+import com.google.gdata.data.spreadsheet.CellEntry;
+import com.google.gdata.data.spreadsheet.CellFeed;
 import com.google.gdata.data.spreadsheet.CustomElementCollection;
 import com.google.gdata.data.spreadsheet.ListEntry;
 import com.google.gdata.data.spreadsheet.ListFeed;
@@ -31,7 +33,8 @@ public class GradesDB {
 	private HashMap<String, Student> students;
 	private WorksheetEntry details, data, attendance, grades;
 	private ArrayList<WorksheetEntry> projectTeams, projectGrades, projectContributions;
-	private HashMap<String, Assignment> assignments;
+	private HashMap<String, String> assignmentsDesc;
+	private HashMap<String, String> projectsDesc;
 	private HashMap<Integer, Integer> sumAssignmentsGrades;
 	
 	/**
@@ -137,22 +140,51 @@ public class GradesDB {
 		URL dataUrl = data.getListFeedUrl();
 	    ListFeed dataFeed = service.getFeed(dataUrl, ListFeed.class);
 	    
-	    assignments = new HashMap<String, Assignment>();
+	    assignmentsDesc = new HashMap<String, String>();
+	    projectsDesc = new HashMap<String, String>();
 	    
-	    for (ListEntry row : dataFeed.getEntries()) {	    	    	    	    	
-	    	CustomElementCollection cells = row.getCustomElements();
+	    CellFeed cellFeed = service.getFeed(data.getCellFeedUrl(), CellFeed.class);
+	    List<CellEntry> cells = cellFeed.getEntries();
+	    
+	    int i = 0;
+	    int row = 2;
+	    while (i < cells.size()) {
+	    	CellEntry cell = cells.get(i);
+	    	String cellPos = cell.getId().substring(cell.getId().lastIndexOf('/') + 1);
 	    	
-	    	String assignment = cells.getValue("Assignments");
-	    	String description = cells.getValue("Description");
+	    	if (!cellPos.startsWith("R" + row + "C1")) {
+	    		++i;
+	    		continue;
+	    	}
+	    	
+	    	String project = cell.getCell().getValue();
+	    	
+	    	++i;
+	    	String projectDescription = cells.get(i).getCell().getValue();
+	    	
+	    	++i;
+	    	String assignment = cells.get(i).getCell().getValue();
+	    	if (assignment.isEmpty()) {
+	    		++i;
+	    		assignment = cells.get(i).getCell().getValue();
+	    	}
+	    	
+	    	++i;
+	    	String assigDescription = cells.get(i).getCell().getValue();
+	    	
 	    	if (!assignment.isEmpty()) {
-	    		assignments.put(assignment, new Assignment(assignment, description, null, null));
+	    		assignmentsDesc.put("Assignment " + (row - 1), assigDescription);
 	    		
 	    		numAssignments++;
 	    	}
-	    	if (!cells.getValue("Projects").isEmpty()) {
+	    	if (!project.isEmpty()) {
+	    		projectsDesc.put("P" + (row - 1), projectDescription);
+	    		
 	    		numProjects++;
-	    	}	    	
-	    
+	    	}
+	    	
+	    	++row;
+	    	++i;
 	    }
 	}
 	
@@ -191,7 +223,7 @@ public class GradesDB {
 		    			teamMembers.add(student);
 		    		}
 		    	}
-		    	project = new ProjectTeam(projectNumber, teamName, teamMembers);
+		    	project = new ProjectTeam(projectNumber, teamName, projectsDesc.get("P" + projectNumber), teamMembers);
 		    	
 		    	// Parse P1 P2 and P3 grades
 		    	gradesUrl = projectGrades.get(j).getListFeedUrl();
@@ -260,7 +292,7 @@ public class GradesDB {
 	    	sumAssignmentsGrades.put(i, sumGrade);
 	    	
 	    	String assignmentName = "Assignment " + String.valueOf(i);
-    		Assignment a = new Assignment(assignmentName, assignments.get(assignmentName).getDesc(), i, grade);
+    		Assignment a = new Assignment(assignmentName, assignmentsDesc.get(assignmentName), i, grade);
 	    	
 	    	assignmentsList.add(a);
 	    	++i;

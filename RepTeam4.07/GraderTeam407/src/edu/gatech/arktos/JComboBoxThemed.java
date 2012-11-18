@@ -1,7 +1,9 @@
 package edu.gatech.arktos;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -41,8 +43,7 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
     private Image     selectedImage;
     private Image     current;
     
-    private JComboBoxUI theme;
-    
+    private JComboBoxUI theme;    
     
     public void setFont(Font font) {
     	comboBox.setFont(font);
@@ -51,7 +52,49 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
     public JComboBoxThemed() {
         setOpaque(false);
 
-        comboBox = new JComboBox<E>();
+        comboBox = new JComboBox<E>() {
+        	
+        	private boolean layingOut;
+        	private boolean isAutoPopupWidth = true;
+        	private int popupWidth;
+        	
+            public void doLayout() {
+                try {
+                    layingOut = true;
+                    super.doLayout();
+                }
+                finally {
+                    layingOut = false;
+                }
+            }
+
+            public Dimension getSize() {
+                Dimension dim = super.getSize();
+                if (!layingOut) {
+                    if (isAutoPopupWidth) {
+                        popupWidth = getOptimumPopupWidth();
+                    }
+                    if (popupWidth != 0) {
+                        dim.width = popupWidth;
+                    }
+                }
+                return dim;
+            }
+
+            private int getOptimumPopupWidth() {
+                return Math.max(super.getSize().width, calculateOptimumPopupWidth());
+            }
+
+            private int calculateOptimumPopupWidth() {
+                int width = 0;
+                FontMetrics fontMetrics = getFontMetrics(getFont());
+                for (int i = 0; i < comboBox.getItemCount(); i++) {
+                    String text = comboBox.getItemAt(i).toString();
+                    width = Math.max(width, fontMetrics.stringWidth(text));
+                }
+                return width + 3;
+            }
+        };
 
         theme = new JComboBoxUI();
         
@@ -275,5 +318,6 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
 	public void removeAllItems() {
 		comboBox.removeAllItems();
 	}
+
 	
 }

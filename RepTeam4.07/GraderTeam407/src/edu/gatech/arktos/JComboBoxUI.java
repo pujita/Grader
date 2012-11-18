@@ -50,6 +50,7 @@ public class JComboBoxUI extends BasicComboBoxUI {
 		b = new JButton();
 		b.setBorder(null);
 		b.setOpaque(true);
+		b.setFocusable(false);
 		
 		try {
 			b.setIcon(new ImageIcon(ResourcesDispatcher.getImage("resources" + System.getProperty("file.separator") + "arrowdown.png")));

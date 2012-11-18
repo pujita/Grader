@@ -51,6 +51,7 @@ public class ProjectTeam {
 	    	
 	    	CustomElementCollection cells = row.getCustomElements();
 	    	criteria = cells.getValue("Criteria").replace(":", "");
+	    	
 	    	gradeStr = cells.getValue(this.getTeamName().replace(" ", ""));
 	    	if(gradeStr != null && !gradeStr.isEmpty()) {
 	    		grade = GradesDB.convertToInt(gradeStr);
@@ -147,6 +148,10 @@ public class ProjectTeam {
 	
 	public Integer getTeamScores (String name) {
 		return teamScores.get(name);
+	}
+	
+	public HashMap<String, Integer> getAllTeamScores () {
+		return teamScores;
 	}
 	
 	public void addTeamScores(String name, Integer teamScore) {

@@ -43,14 +43,25 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
     private Image     selectedImage;
     private Image     current;
     
-    private JComboBoxUI theme;    
+    private JComboBoxUI theme;
+    private boolean onlyRead;
     
     public void setFont(Font font) {
     	comboBox.setFont(font);
     }
+    
+    public JComboBoxThemed(boolean onlyRead) {
+    	init(onlyRead);
+    }
 
     public JComboBoxThemed() {
-        setOpaque(false);
+        init(false);
+    }
+    
+    private void init(boolean onlyRead) {
+    	this.onlyRead = onlyRead;
+    	
+    	setOpaque(false);
 
         comboBox = new JComboBox<E>() {
         	
@@ -92,7 +103,7 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
                     String text = comboBox.getItemAt(i).toString();
                     width = Math.max(width, fontMetrics.stringWidth(text));
                 }
-                return width + 3;
+                return width + 3 + 20;
             }
         };
 
@@ -151,6 +162,10 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
         addMouseListener(this);
         addComponentListener(this);
         comboBox.addPopupMenuListener(this);
+        
+        if (onlyRead) {
+        	comboBox.addItem((E)"(click for details)");
+        }
     }
     
     @Override
@@ -302,12 +317,19 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
 
 	@Override
 	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+		if (onlyRead) {
+			comboBox.removeItemAt(0);
+		}
 		theme.setPopupVisible(true);
 	}
 
 	@Override
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
 		theme.setPopupVisible(false);
+		if (onlyRead) {
+			comboBox.insertItemAt((E)"(click for details)", 0);
+			comboBox.setSelectedIndex(0);
+		}		
 	}
 
 	@Override
@@ -317,6 +339,10 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
 	
 	public void removeAllItems() {
 		comboBox.removeAllItems();
+		
+		if (onlyRead) {
+        	comboBox.addItem((E)"(click for details)");
+        }
 	}
 
 	

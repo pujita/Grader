@@ -50,7 +50,7 @@ public class AssignmentTest extends TestCase {
 	/* Test toString() function */
 	public void testToString() {
 		String result = aTest.toString();
-		assertEquals("1. Description", result);
+		assertEquals("1. WordCount in Java", result);
 	}
 
 }

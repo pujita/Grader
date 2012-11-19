@@ -62,6 +62,8 @@ public class Student {
 	public ArrayList<Integer> getAssignmentGrades() {
 		ArrayList<Integer> assignmentGrades = new ArrayList<Integer>();
 		
+		if (assignments == null) return assignmentGrades;
+		
 		for (Assignment a: assignments) {
 			assignmentGrades.add( GradesDB.convertToInt(a.getGrade()));
 		}

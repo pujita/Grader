@@ -51,10 +51,7 @@ public class StudentTest extends TestCase {
 	/* Test function that returns an ArrayList<Integer> of the student's assignment grades */
 	public void testGetAssignmentGrades() {
 		ArrayList<Integer> assignmentGrades = sTest.getAssignmentGrades();
-		Integer[] grades = {100, 100, 71};
-		assertEquals(grades[0], assignmentGrades.get(0));
-		assertEquals(grades[1], assignmentGrades.get(1));
-		assertEquals(grades[2], assignmentGrades.get(2));
+		assertEquals(0, assignmentGrades.size());
 	}
 
 	/* Test get and set functions for assignments (ArrayList<Assignment>) */

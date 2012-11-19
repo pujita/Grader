@@ -486,6 +486,7 @@ public class GradesTool {
 		         Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 		         if (isSelected) {
 		             c.setBackground(Color.getHSBColor(0, 0, 0.88f));
+		             c.setForeground(Color.BLACK);
 		         }
 		         return c;
 		     }

@@ -12,6 +12,7 @@ public class AllTests {
 		suite.addTestSuite(GradesDBTest.class);
 		suite.addTestSuite(AssignmentTest.class);
 		suite.addTestSuite(StudentTest.class);
+		suite.addTestSuite(ProjectTeamTest.class);
 		//$JUnit-END$
 		return suite;
 	}

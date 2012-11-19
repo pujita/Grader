@@ -14,6 +14,9 @@ import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.font.TextAttribute;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,10 +26,13 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -66,7 +72,7 @@ public class GradesTool {
 	private static boolean updateRightSide = true;
 	
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked", "rawtypes", "serial" })
 	public static void main(String [] args) throws IOException, ServiceException {
 		
 		final JFrame frame = new JFrame("GradesTool");
@@ -114,7 +120,7 @@ public class GradesTool {
 		_comboBoxStudent = new JComboBoxThemed<Student>();
 		frame.add(_comboBoxStudent);
 		_comboBoxStudent.setLocation(new Point(15, 35));
-		_comboBoxStudent.setSize(new Dimension(200, 35));
+		_comboBoxStudent.setSize(210, 35);
 		_comboBoxStudent.setFont(font);
 		_comboBoxStudent.addActionListener(new ActionListener() {
 			@Override
@@ -140,6 +146,98 @@ public class GradesTool {
 						_comboBoxProjects.addItem(project);
 					}
 				}
+			}
+		});
+		ButtonExtended save = new ButtonExtended("Save ->", font);
+		save.setLocation(237, 35);
+		save.setSize(65, 35);
+		frame.add(save);
+		save.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fileChooser = new JFileChooser();
+		        fileChooser.setDialogTitle("Select directory to save the user information to");
+		        fileChooser.setApproveButtonText("Choose");
+		        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		        if (fileChooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
+		        	File f = fileChooser.getSelectedFile();
+		        	
+		        	try{
+		        		if (!f.createNewFile()) {
+			        		if (!f.canWrite()) {
+			        			JOptionPane.showMessageDialog(frame, "The filename in that directory can't be written. Please, check permissions and try again.");
+			        			return;
+			        		}
+			        	}
+		        		
+		        		Student s = _comboBoxStudent.getSelectedItem();
+		        		FileWriter fstream = new FileWriter(f.getAbsoluteFile() + System.getProperty("file.separator") + s.getName() + ".txt");
+		        		BufferedWriter out = new BufferedWriter(fstream);
+		        		out.write(s.getName() + System.lineSeparator());
+		        		for (int i = 0; i < s.getName().length(); ++i) {
+		        			out.write("-");
+		        		}
+		        		out.write(System.lineSeparator());
+		        		out.write("\tGTID: " + s.getGtid() + System.lineSeparator());
+		        		out.write("\te-mail: " + s.getEmail() + System.lineSeparator());
+		        		out.write("\tAttendance: " + s.getAttendance() + System.lineSeparator());
+		        		out.write(System.lineSeparator());
+		        		out.write("Grades" + System.lineSeparator());
+		        		
+		        		out.write("\tAssignments " + System.lineSeparator());
+		        		ComboBoxModel assignments = _comboBoxAssignments.getModel();
+		        		for (int i = 0; i < assignments.getSize(); ++i) {
+		        			Assignment a = (Assignment)assignments.getElementAt(i);
+		        			
+		        			out.write("\t\t" + a.getName() + ": " + a.getDesc() + " - score " + a.getGrade() + System.lineSeparator());
+		        		}
+		        		out.write("\t\tAverage score: " + s.getAverageAssignmentGrade() + System.lineSeparator());
+		        		out.write(System.lineSeparator());
+		        		
+		        		out.write("\tProjects " + System.lineSeparator());
+		        		ComboBoxModel projects = _comboBoxProjects.getModel();
+		        		for (int i = 0; i < projects.getSize(); ++i) {
+		        			ProjectTeam p = (ProjectTeam)projects.getElementAt(i);
+		        			
+		        			out.write("\t\t" + "Project " + p + System.lineSeparator());
+		        			
+		        			out.write("\t\t\tTeam grades:" + System.lineSeparator());
+		        			HashMap<String, Integer> scores = p.getAllTeamScores();
+		        			Set<String> keys = scores.keySet();
+		        			for (String key: keys) {
+		        				if (key.equals("TOTAL")) {
+		        					continue;
+		        				}
+		        				
+		        				int grade = scores.get(key);
+		        				out.write("\t\t\t\t" + ((grade < 10) ? "0" : "") + grade + ": " + key + System.lineSeparator());
+		        			}
+		        			out.write("\t\t\t\t" + scores.get("TOTAL") + ": TOTAL" + System.lineSeparator());
+		        			out.write(System.lineSeparator());
+		        			
+		        			out.write("\t\t\tContribution grades received" + System.lineSeparator());
+		            		ArrayList<Integer> contributions = p.getPeerScores(s.getName());
+		            		ArrayList<String> teamMembers = p.getTeamMembers();
+		            		int j = 0;
+		            		for (String member: teamMembers) {
+		            			if (member.equals(s.getName())) {
+		            				continue;
+		            			}
+		            			
+		            			int grade = contributions.get(j);
+		            			out.write("\t\t\t\t" + ((grade < 10) ? "0" : "") + grade + ": " + member + System.lineSeparator());
+		            			++j;
+		            		}
+		            		out.write(System.lineSeparator());
+		        		}
+		        		
+		        		out.flush();
+		        		out.close();
+		    		}
+		        	catch (Exception ex) {
+		        		JOptionPane.showMessageDialog(frame, "There was some error while saving the file. The system said: " + ex.getMessage());
+		    		}
+		        }
 			}
 		});
 		

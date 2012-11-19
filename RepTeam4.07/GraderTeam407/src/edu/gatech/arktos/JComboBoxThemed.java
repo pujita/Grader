@@ -20,6 +20,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 
+import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.event.PopupMenuEvent;
@@ -352,6 +353,10 @@ public class JComboBoxThemed<E> extends JComponent implements FocusListener, Mou
 	
 	public void setSelectedItem(E item) {
 		comboBox.setSelectedItem(item);
+	}
+	
+	public ComboBoxModel<E> getModel() {
+		return comboBox.getModel();
 	}
 
 	

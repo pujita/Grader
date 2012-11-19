@@ -36,6 +36,8 @@ public class GradesDB {
 	private HashMap<String, String> assignmentsDesc;
 	private HashMap<String, String> projectsDesc;
 	private HashMap<Integer, Integer> sumAssignmentsGrades;
+	private ArrayList<ArrayList<ProjectTeam>> teamsByNumber;
+	private ArrayList<Integer> avgProjectsGrade;
 	
 	/**
 	 * Constructor
@@ -137,9 +139,6 @@ public class GradesDB {
 	 * @throws IOException 
 	 */
 	private void processData() throws IOException, ServiceException{
-		URL dataUrl = data.getListFeedUrl();
-	    ListFeed dataFeed = service.getFeed(dataUrl, ListFeed.class);
-	    
 	    assignmentsDesc = new HashMap<String, String>();
 	    projectsDesc = new HashMap<String, String>();
 	    
@@ -203,13 +202,21 @@ public class GradesDB {
 	    ArrayList<String> teamMembers = new ArrayList<String>();
 	    ProjectTeam project;
 	    
+	    teamsByNumber = new ArrayList<ArrayList<ProjectTeam>>();
+	    avgProjectsGrade = new ArrayList<Integer>();
+	    
 	    for (int j = 0; j < projectTeams.size(); j++) {
+	    	ArrayList<ProjectTeam> teamsForThisProject = new ArrayList<ProjectTeam>();
+	    	teamsByNumber.add(teamsForThisProject);
+	    	
 	    	//project = new ProjectTeam();
 	    			
 	    	// parse P1 P2 and P3 teams 
 		    teamsUrl = projectTeams.get(j).getListFeedUrl();
 		    teamsFeed = service.getFeed(teamsUrl, ListFeed.class);
 		   
+		    int sumGrades = 0;
+		    int numTeams = 0;
 		    for (ListEntry row : teamsFeed.getEntries()) {	
 		    	
 		    	CustomElementCollection cells = row.getCustomElements();
@@ -224,6 +231,7 @@ public class GradesDB {
 		    		}
 		    	}
 		    	project = new ProjectTeam(projectNumber, teamName, projectsDesc.get("P" + projectNumber), teamMembers);
+		    	teamsForThisProject.add(project);
 		    	
 		    	// Parse P1 P2 and P3 grades
 		    	gradesUrl = projectGrades.get(j).getListFeedUrl();
@@ -236,7 +244,12 @@ public class GradesDB {
 		    	project.addprojectContributions(contributionsFeed);
 		    	
 		    	assignProjectsToStudents(teamMembers, project);
+		    	
+		    	sumGrades += project.getTeamScores("TOTAL");
+		    	++numTeams;
 		    }
+		    avgProjectsGrade.add((numTeams > 0) ? sumGrades/numTeams : 0);
+		    
 	    }
 	}
 	
@@ -354,6 +367,10 @@ public class GradesDB {
 	public int getAssignmentGrade(int assignment) {
 		return (numStudents == 0) ? 0 : sumAssignmentsGrades.get(assignment)/numStudents;
 	}
+	
+	public ArrayList<ArrayList<ProjectTeam>> getProjectsTeams() {
+		return teamsByNumber;
+	}
 
 	
 	/**
@@ -368,5 +385,9 @@ public class GradesDB {
 			string = string.substring(0,index);
 		}
 		return Integer.parseInt(string);
+	}
+	
+	public int getAverageProjectGrade(int projectNumber) {
+		return avgProjectsGrade.get(projectNumber);
 	}
 }

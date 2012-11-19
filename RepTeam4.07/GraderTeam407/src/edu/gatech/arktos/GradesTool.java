@@ -1,12 +1,18 @@
 package edu.gatech.arktos;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.font.TextAttribute;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,15 +22,22 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import com.google.gdata.util.ServiceException;
 
 public class GradesTool {
 	
 	private static JComboBoxThemed<Student> _comboBoxStudent;
-	private static JComboBoxThemed<ProjectTeam> _comboBoxProject;
-	private static JComboBoxThemed _comboBoxGroup;
+	private static JComboBoxThemed<String> _comboBoxProject;
+	private static JComboBoxThemed<String> _comboBoxTeam;
 	private static JComboBoxThemed<Assignment> _comboBoxAssignments;
 	private static JComboBoxThemed<ProjectTeam> _comboBoxProjects;
 	
@@ -35,25 +48,49 @@ public class GradesTool {
 	private static LabelExtended labelAssignmentGradeValue;
 	private static LabelExtended labelAssignmentAverageGrade;
 	private static LabelExtended labelProjectAverageGrade;
+	private static LabelExtended labelProjectGradeTotalValue;
 	private static JComboBoxThemed<String> _comboBoxProjectContributionGrade;
 	private static JComboBoxThemed<String> _comboBoxProjectAverageGrade;
+	private static JComboBoxThemed<String> _comboBoxTeamContributionMembers;
+	private static JList<String> _listMembers;
+	private static JList<String> _listGrades;
+	private static JList<String> _listContributions;
 	
 	private static GradesDB gdb;
 	
+	private static ArrayList<ArrayList<ProjectTeam>> projectsTeams;
+	private static DefaultListModel<String> membersModel;
+	private static DefaultListModel<String> gradesModel;
+	private static DefaultListModel<String> contributionsModel;
+	
+	private static boolean updateRightSide = true;
+	
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void main(String [] args) throws IOException, ServiceException {
 		
 		final JFrame frame = new JFrame("GradesTool");
+		frame.setContentPane(new Container() {
+			public void paint(Graphics g) {
+				super.paint(g);
+				
+				g.setColor(Color.getHSBColor(0, 0, 0.75f));
+				g.drawLine(325, 25, 325, 465);
+				
+				g.drawLine(25, 82, 620, 82);
+			}
+		});
 		frame.getContentPane().setPreferredSize(new Dimension(640, 480));
 		frame.pack();
 		frame.setResizable(false);
 		frame.setLayout(null);
+		frame.setLocationRelativeTo(null);
 		frame.addComponentListener(new ComponentListener() {
 			@Override
 			public void componentResized(ComponentEvent e) {
 			}
 			@Override
 			public void componentMoved(ComponentEvent e) {
-				
 			}
 			@Override
 			public void componentShown(ComponentEvent e) {
@@ -111,12 +148,58 @@ public class GradesTool {
 		_comboBoxProject.setLocation(new Point(350, 35));
 		_comboBoxProject.setSize(new Dimension(65, 35));
 		_comboBoxProject.setFont(font);
+		_comboBoxProject.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int projectNumber = _comboBoxProject.getSelectedIndex();
+				
+				if (projectNumber >= 0) {
+					ArrayList<ProjectTeam> projectTeams = projectsTeams.get(projectNumber);
+					
+					_comboBoxTeam.removeAllItems();
+					for (int i = 0; i < projectTeams.size(); ++i) {
+						_comboBoxTeam.addItem(((i < 10) ? "0" : "") + (i + 1));
+					}
+				}
+			}
+		});
 		
-		_comboBoxGroup = new JComboBoxThemed();
-		frame.add(_comboBoxGroup);
-		_comboBoxGroup.setLocation(new Point(430, 35));
-		_comboBoxGroup.setSize(new Dimension(80, 35));
-		_comboBoxGroup.setFont(font);
+		_comboBoxTeam = new JComboBoxThemed();
+		frame.add(_comboBoxTeam);
+		_comboBoxTeam.setLocation(new Point(430, 35));
+		_comboBoxTeam.setSize(new Dimension(80, 35));
+		_comboBoxTeam.setFont(font);
+		_comboBoxTeam.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int projectNumber = _comboBoxProject.getSelectedIndex();
+				int selectedTeam = _comboBoxTeam.getSelectedIndex();
+				
+				if (selectedTeam >= 0) {
+					ProjectTeam p = projectsTeams.get(projectNumber).get(selectedTeam);
+					
+					membersModel.clear();
+					_comboBoxTeamContributionMembers.removeAllItems();
+					ArrayList<String> teamMembers = p.getTeamMembers();
+					for (String member: teamMembers) {
+						membersModel.addElement(member);
+						_comboBoxTeamContributionMembers.addItem(member);
+					}
+					
+					gradesModel.clear();
+					HashMap<String, Integer> teamGrades = p.getAllTeamScores();
+					Set<String> keys = teamGrades.keySet();
+					for (String key: keys) {
+						if (!key.equals("TOTAL")) {
+							gradesModel.addElement(key + " got " + teamGrades.get(key));							
+						}
+						else {
+							labelProjectGradeTotalValue.setText(String.valueOf(teamGrades.get(key)) + " (avg. " + gdb.getAverageProjectGrade(p.getProjectNumber() - 1) + ")");
+						}
+					}
+				}
+			}
+		});
 		
 		LabelExtended labelStudent = new LabelExtended("Student:");
 		labelStudent.setFont(font);
@@ -237,6 +320,11 @@ public class GradesTool {
 				ProjectTeam p = _comboBoxProjects.getSelectedItem();
 				
 				if (p != null) {
+					if (!updateRightSide) {
+						updateRightSide = true;
+						return;
+					}
+					
 					_comboBoxProjectAverageGrade.removeAllItems();
 					HashMap<String, Integer> teamScores = p.getAllTeamScores();
 					Set<String> keys = teamScores.keySet();
@@ -263,6 +351,9 @@ public class GradesTool {
 						_comboBoxProjectContributionGrade.addItem(((grade < 10) ? "0" : "") + contributionScores.get(i) + " from " + peer);
 						++i;
 					}
+					
+					_comboBoxProject.setSelectedIndex(p.getProjectNumber() - 1);
+					_comboBoxTeam.setSelectedIndex(Integer.parseInt(p.getTeamNumber()) - 1);
 				}
 			}
 		});
@@ -291,6 +382,127 @@ public class GradesTool {
 		_comboBoxProjectContributionGrade.setSize(150, 25);
 		_comboBoxProjectContributionGrade.setFont(font);
 		
+		DefaultListCellRenderer cellRenderer = new DefaultListCellRenderer() {
+		     @Override
+		     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		         Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+		         if (isSelected) {
+		             c.setBackground(Color.getHSBColor(0, 0, 0.88f));
+		         }
+		         return c;
+		     }
+		};
+		
+		LabelExtended labelProjectMembers = new LabelExtended("Team members:", font);
+		labelProjectMembers.setLocation(350, 88);
+		frame.add(labelProjectMembers);
+		membersModel = new DefaultListModel();
+		_listMembers = new JList();
+		_listMembers.setLocation(350, 115);
+		_listMembers.setSize(275, 71);
+		_listMembers.setFont(font);
+		_listMembers.setBackground(Color.getHSBColor(0, 0, 0.88f));
+		_listMembers.setBorder(BorderFactory.createLineBorder(Color.getHSBColor(0, 0, 0.75f)));
+		_listMembers.setModel(membersModel);
+		_listMembers.addFocusListener(new FocusListener() {
+			@Override
+			public void focusGained(FocusEvent e) {
+			}
+
+			@Override
+			public void focusLost(FocusEvent e) {
+				_listMembers.clearSelection();
+			}
+		});
+		JScrollPane acrossScrollBar = new JScrollPane(_listMembers);
+		frame.add(acrossScrollBar);
+		acrossScrollBar.setLocation(350, 115);
+		acrossScrollBar.setSize(275, 71);
+		_listMembers.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				if (_listMembers.getSelectedIndex() >= 0) {
+					updateRightSide = false;
+					_comboBoxStudent.setSelectedItem(gdb.getStudentByName(_listMembers.getSelectedValue()));
+				}
+			}
+		});
+		
+		LabelExtended labelProjectGrades = new LabelExtended("Team project grades:", font);
+		labelProjectGrades.setLocation(350, 202);
+		frame.add(labelProjectGrades);
+		gradesModel = new DefaultListModel();
+		_listGrades = new JList();
+		_listGrades.setLocation(350, 230);
+		_listGrades.setSize(275, 93);
+		_listGrades.setFont(font);
+		_listGrades.setBackground(Color.getHSBColor(0, 0, 0.88f));
+		_listGrades.setBorder(BorderFactory.createLineBorder(Color.getHSBColor(0, 0, 0.75f)));
+		_listGrades.setModel(gradesModel);
+		_listGrades.setFocusable(false);
+		_listGrades.setCellRenderer(cellRenderer);
+		acrossScrollBar = new JScrollPane(_listGrades);
+		frame.add(acrossScrollBar);
+		acrossScrollBar.setLocation(350, 230);
+		acrossScrollBar.setSize(275, 93);
+		LabelExtended labelProjectGradeTotal = new LabelExtended("Total:", font);
+		labelProjectGradeTotal.setLocation(495, 320);
+		frame.add(labelProjectGradeTotal);
+		labelProjectGradeTotalValue = new LabelExtended("<Undefined>", font);
+		labelProjectGradeTotalValue.setLocation(545, 320);
+		labelProjectGradeTotalValue.setSize(75, labelProjectGradeTotalValue.getHeight());
+		labelProjectGradeTotalValue.setHorizontalAlignment(LabelExtended.ALIGN_RIGHT);
+		labelProjectGradeTotalValue.setBold(true);
+		frame.add(labelProjectGradeTotalValue);
+		
+		
+		LabelExtended labelTeamContribution = new LabelExtended("Contribution grades:", font);
+		labelTeamContribution.setLocation(350, 340);
+		frame.add(labelTeamContribution);
+		_comboBoxTeamContributionMembers = new JComboBoxThemed<String>();
+		frame.add(_comboBoxTeamContributionMembers);
+		_comboBoxTeamContributionMembers.setLocation(350, 370);
+		_comboBoxTeamContributionMembers.setSize(275, 25);
+		_comboBoxTeamContributionMembers.setFont(font);
+		_comboBoxTeamContributionMembers.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (_comboBoxTeamContributionMembers.getSelectedIndex() >= 0) {
+					int projectNumber = _comboBoxProject.getSelectedIndex();
+					int selectedTeam = _comboBoxTeam.getSelectedIndex();
+					ProjectTeam p = projectsTeams.get(projectNumber).get(selectedTeam);
+					
+					String student = _comboBoxTeamContributionMembers.getSelectedItem();
+					ArrayList<Integer> contributionScores = p.getPeerScores(student);
+					ArrayList<String> peerNames = p.getTeamMembers();
+					
+					int i = 0;
+					contributionsModel.clear();
+					for (String peer: peerNames) {
+						if (peer.equals(student)) continue;
+						
+						int grade = contributionScores.get(i);
+						contributionsModel.addElement(((grade < 10) ? "0" : "") + contributionScores.get(i) + " from " + peer);
+						++i;
+					}
+				}
+			}
+		});
+		contributionsModel = new DefaultListModel();
+		_listContributions = new JList();
+		_listContributions.setLocation(350, 400);
+		_listContributions.setSize(275, 71);
+		_listContributions.setFont(font);
+		_listContributions.setBackground(Color.getHSBColor(0, 0, 0.88f));
+		_listContributions.setBorder(BorderFactory.createLineBorder(Color.getHSBColor(0, 0, 0.75f)));
+		_listContributions.setModel(contributionsModel);
+		_listContributions.setFocusable(false);
+		_listContributions.setCellRenderer(cellRenderer);
+		acrossScrollBar = new JScrollPane(_listContributions);
+		frame.add(acrossScrollBar);
+		acrossScrollBar.setLocation(350, 400);
+		acrossScrollBar.setSize(275, 71);
+		
 		
 		fillData();
 		frame.setVisible(true);
@@ -302,6 +514,11 @@ public class GradesTool {
 		
 		gdb = sess.getDBByName(Constants.GRADES_DB);
 		HashSet<Student> stds = gdb.getStudents();
+		
+		projectsTeams = gdb.getProjectsTeams();
+		for (int i = 0; i < projectsTeams.size(); ++i) {
+			_comboBoxProject.addItem(String.valueOf(i + 1));
+		}
 		
 		for (Student std: stds) {
 			_comboBoxStudent.addItem(std);

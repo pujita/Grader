@@ -1,6 +1,7 @@
 
 package edu.gatech.arktos;
 
+@SuppressWarnings("serial")
 public class ResourceException extends Throwable {
     
     public static final int RESOURCE_IMAGE       = 0;

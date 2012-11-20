@@ -163,6 +163,8 @@ public class GradesTool {
 		        	File f = fileChooser.getSelectedFile();
 		        	
 		        	try{
+		        		Student s = _comboBoxStudent.getSelectedItem();
+		        		f = new File(f.getAbsoluteFile() + System.getProperty("file.separator") + s.getName().replace(" ", "") + ".txt");
 		        		if (!f.createNewFile()) {
 			        		if (!f.canWrite()) {
 			        			JOptionPane.showMessageDialog(frame, "The filename in that directory can't be written. Please, check permissions and try again.");
@@ -170,8 +172,7 @@ public class GradesTool {
 			        		}
 			        	}
 		        		
-		        		Student s = _comboBoxStudent.getSelectedItem();
-		        		FileWriter fstream = new FileWriter(f.getAbsoluteFile() + System.getProperty("file.separator") + s.getName() + ".txt");
+		        		FileWriter fstream = new FileWriter(f.getAbsoluteFile());
 		        		BufferedWriter out = new BufferedWriter(fstream);
 		        		out.write(s.getName() + System.lineSeparator());
 		        		for (int i = 0; i < s.getName().length(); ++i) {
